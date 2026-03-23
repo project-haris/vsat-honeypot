@@ -27,6 +27,60 @@ perl server.pl
 
 Open `http://127.0.0.1:8080`.
 
+## Nix Shell
+
+If you want a reproducible local shell for testing:
+
+```sh
+nix-shell
+```
+
+This provides `perl`, `curl`, `docker`, `docker-compose`, `jq`, and `git`.
+
+## Docker
+
+Build and run locally:
+
+```sh
+docker build -t vsat-honeypot .
+docker run --name vsat-honeypot \
+  -p 8080:8080 \
+  -e VSAT_BIND=0.0.0.0 \
+  -v "$(pwd)/config:/app/config" \
+  -v "$(pwd)/data:/app/data" \
+  -v "$(pwd)/logs:/app/logs" \
+  --restart unless-stopped \
+  vsat-honeypot
+```
+
+Or with Compose:
+
+```sh
+docker compose up -d --build
+```
+
+The container now supports these runtime environment overrides:
+
+- `VSAT_BIND` default `0.0.0.0` in Docker
+- `VSAT_PORT` default `8080`
+- `VSAT_TRUST_PROXY_HEADERS` set to `true` when running behind a reverse proxy
+- `VSAT_RATE_LIMIT_WINDOW_SECONDS`
+- `VSAT_RATE_LIMIT_MAX_REQUESTS`
+
+## Tailscale Access
+
+To reach the honeypot from any node in your tailnet:
+
+1. Install and connect Tailscale on the Docker host.
+2. Start this container on that host with port `8080` published.
+3. From another Tailscale node, open `http://<tailscale-ip>:8080` or `http://<tailscale-hostname>:8080`.
+
+Notes:
+
+- The app must bind to `0.0.0.0` inside the container, which the Docker setup above already does.
+- If you only want tailnet access, restrict exposure with a host firewall so port `8080` is reachable from the Tailscale interface but not the public internet.
+- If you prefer HTTPS and a stable tailnet name, place this behind `tailscale serve` or a reverse proxy on the host.
+
 ## Default Credentials
 
 The honeypot accepts these credentials (all attempts are logged):

@@ -22,14 +22,14 @@ make_path($public_dir, $data_dir, $log_dir, $config_dir);
 bootstrap_config() unless -e $config_file;
 my $config = load_config();
 
-my $host = $config->{server}{bind} // '127.0.0.1';
-my $port = $config->{server}{port} // 8080;
+my $host = env_or_config('VSAT_BIND', $config->{server}{bind}, '127.0.0.1');
+my $port = env_or_config_int('VSAT_PORT', $config->{server}{port}, 8080);
 my $nav_source = $config->{navigation}{mode} // 'honeypot';
 my $nav_refresh = $config->{navigation}{refreshSeconds} // 30;
 my $nav_url = resolve_nav_url($config);
-my $trust_proxy_headers = $config->{server}{trustProxyHeaders} ? 1 : 0;
-my $rate_limit_window = $config->{server}{rateLimit}{windowSeconds} // 60;
-my $rate_limit_max = $config->{server}{rateLimit}{maxRequestsPerWindow} // 180;
+my $trust_proxy_headers = env_or_config_bool('VSAT_TRUST_PROXY_HEADERS', $config->{server}{trustProxyHeaders}) ? 1 : 0;
+my $rate_limit_window = env_or_config_int('VSAT_RATE_LIMIT_WINDOW_SECONDS', $config->{server}{rateLimit}{windowSeconds}, 60);
+my $rate_limit_max = env_or_config_int('VSAT_RATE_LIMIT_MAX_REQUESTS', $config->{server}{rateLimit}{maxRequestsPerWindow}, 180);
 
 bootstrap_state() unless -e $state_file;
 
@@ -500,6 +500,30 @@ sub merge_defaults {
         }
     }
     return \%merged;
+}
+
+sub env_or_config {
+    my ($env_name, $config_value, $fallback) = @_;
+    return $ENV{$env_name} if defined $ENV{$env_name} && $ENV{$env_name} ne '';
+    return $config_value if defined $config_value && $config_value ne '';
+    return $fallback;
+}
+
+sub env_or_config_int {
+    my ($env_name, $config_value, $fallback) = @_;
+    return $ENV{$env_name} + 0 if defined $ENV{$env_name} && $ENV{$env_name} =~ /^\d+$/;
+    return $config_value + 0 if defined $config_value && $config_value =~ /^\d+$/;
+    return $fallback;
+}
+
+sub env_or_config_bool {
+    my ($env_name, $config_value) = @_;
+    if (defined $ENV{$env_name} && $ENV{$env_name} ne '') {
+        my $value = lc trim($ENV{$env_name});
+        return 1 if $value =~ /^(1|true|yes|on)$/;
+        return 0 if $value =~ /^(0|false|no|off)$/;
+    }
+    return $config_value ? 1 : 0;
 }
 
 sub resolve_client_ip {
