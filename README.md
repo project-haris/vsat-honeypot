@@ -4,6 +4,11 @@ A maritime VSAT honeypot designed to emulate the Cobham SAILOR 900 VSAT Ka Insta
 
 **For authorized research purposes only. Deploy in isolated lab environments.**
 
+[![License](https://img.shields.io/github/license/ahmdngi/vsat-honeypot?style=flat-square)]()
+[![CI](https://img.shields.io/github/actions/workflow/status/ahmdngi/vsat-honeypot/secret-scan.yml?style=flat-square)](https://github.com/ahmdngi/vsat-honeypot/actions/workflows/secret-scan.yml)
+[![Language](https://img.shields.io/badge/language-Perl-blue?style=flat-square)]()
+[![Stars](https://img.shields.io/github/stars/ahmdngi/vsat-honeypot?style=flat-square)](https://github.com/ahmdngi/vsat-honeypot)
+
 ## Description
 
 This honeypot mimics the SAILOR 900 VSAT Ka terminal web interface, capturing attacker interactions, credentials, and exploration patterns. It is designed to appear authentic to casual scanning and basic fingerprinting attempts.
